@@ -124,7 +124,8 @@ public class PasswordResetService {
                     HttpStatus.BAD_REQUEST, "Este link expirou. Solicite uma nova recuperação de senha.");
         }
 
-        userService.updatePasswordFromReset(prt.getUser(), newPassword);
+        User user = prt.getUser();
+        userService.updatePasswordFromReset(user, newPassword);
         prt.setUsed(true);
         tokenRepository.save(prt);
     }

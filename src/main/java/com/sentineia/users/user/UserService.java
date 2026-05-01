@@ -19,7 +19,10 @@ public class UserService extends BaseService<User> {
     private final PerfilRepository perfilRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository repository, PerfilRepository perfilRepository, PasswordEncoder passwordEncoder) {
+    public UserService(
+            UserRepository repository,
+            PerfilRepository perfilRepository,
+            PasswordEncoder passwordEncoder) {
         super(repository);
         this.userRepository = repository;
         this.perfilRepository = perfilRepository;
