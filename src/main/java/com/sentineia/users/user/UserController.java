@@ -5,6 +5,7 @@ import com.sentineia.security.JwtService;
 
 import jakarta.validation.Valid;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -40,14 +41,16 @@ public class UserController extends BaseController<User, UserService> {
                 updated.getId(),
                 updated.getName(),
                 updated.getEmail(),
+                updated.getPerfil().getId(),
+                updated.getPerfil().getName(),
                 token,
                 "Bearer",
                 jwtService.getExpirationMs());
     }
 
-    @PostMapping
-    @Override
-    public ResponseEntity<User> create(@Valid @RequestBody User entity) {
-        return super.create(entity);
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<User> create(@Valid @RequestBody CreateUserRequest body) {
+        User created = service().createFromRequest(body);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 }

@@ -37,6 +37,8 @@ public class JwtService {
                 .subject(user.getId().toString())
                 .claim("email", user.getEmail())
                 .claim("name", user.getName())
+                .claim("perfilId", user.getPerfil().getId().toString())
+                .claim("perfilName", user.getPerfil().getName())
                 .issuedAt(now)
                 .expiration(expiry)
                 .signWith(signingKey(), Jwts.SIG.HS256)

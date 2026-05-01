@@ -1,6 +1,10 @@
 package com.sentineia.users.user;
 
 import com.sentineia.base.BaseService;
+import com.sentineia.users.perfil.Perfil;
+import com.sentineia.users.perfil.PerfilRepository;
+
+import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -12,12 +16,27 @@ import org.springframework.web.server.ResponseStatusException;
 public class UserService extends BaseService<User> {
 
     private final UserRepository userRepository;
+    private final PerfilRepository perfilRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository repository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository repository, PerfilRepository perfilRepository, PasswordEncoder passwordEncoder) {
         super(repository);
         this.userRepository = repository;
+        this.perfilRepository = perfilRepository;
         this.passwordEncoder = passwordEncoder;
+    }
+
+    @Transactional
+    public User createFromRequest(CreateUserRequest request) {
+        Perfil perfil = perfilRepository
+                .findById(request.perfilId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Perfil inválido."));
+        User user = new User();
+        user.setName(request.name().trim());
+        user.setEmail(normalizeEmail(request.email()));
+        user.setPassword(request.password());
+        user.setPerfil(perfil);
+        return save(user);
     }
 
     @Override
@@ -28,6 +47,9 @@ public class UserService extends BaseService<User> {
             user.setEmail(email);
             if (userRepository.existsByEmail(email)) {
                 throw new ResponseStatusException(HttpStatus.CONFLICT, "Este e-mail já está em uso.");
+            }
+            if (user.getPerfil() == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Perfil é obrigatório.");
             }
         }
         if (user.getId() == null && user.getPassword() != null) {
@@ -41,7 +63,12 @@ public class UserService extends BaseService<User> {
         User user = userRepository
                 .findByEmail(normalizeEmail(principalEmail))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utilizador não encontrado."));
-        return new UserProfileResponse(user.getId(), user.getName(), user.getEmail());
+        return new UserProfileResponse(
+                user.getId(),
+                user.getName(),
+                user.getEmail(),
+                user.getPerfil().getId(),
+                user.getPerfil().getName());
     }
 
     /**
@@ -66,8 +93,12 @@ public class UserService extends BaseService<User> {
         if (userRepository.existsByEmailAndIdNot(newEmail, user.getId())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Este e-mail já está em uso.");
         }
+        Perfil perfil = perfilRepository
+                .findById(body.perfilId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Perfil inválido."));
         user.setName(body.name().trim());
         user.setEmail(newEmail);
+        user.setPerfil(perfil);
         return save(user);
     }
 

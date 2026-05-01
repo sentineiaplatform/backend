@@ -5,9 +5,11 @@ import java.util.UUID;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
-public record UpdateUserProfileRequest(
-        @NotBlank String name,
+public record CreateUserRequest(
+        @NotBlank @Size(min = 2, max = 200) String name,
         @NotBlank @Email String email,
+        @NotBlank @Size(min = 8, max = 200) String password,
         @NotNull UUID perfilId) {
 }

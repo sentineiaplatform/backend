@@ -6,6 +6,8 @@ public record UserProfileUpdateResponse(
         UUID id,
         String name,
         String email,
+        UUID perfilId,
+        String perfilName,
         String accessToken,
         String tokenType,
         long expiresInMs) {
