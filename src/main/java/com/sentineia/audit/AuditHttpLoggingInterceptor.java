@@ -1,11 +1,16 @@
 package com.sentineia.audit;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sentineia.users.user.User;
 import com.sentineia.users.user.UserRepository;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequestWrapper;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.http.HttpMethod;
@@ -14,7 +19,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.web.util.ContentCachingRequestWrapper;
 
 /**
  * Grava um evento por pedido HTTP relevante, sem depender de chamadas explícitas ao {@link AuditService}
@@ -26,14 +33,17 @@ public class AuditHttpLoggingInterceptor implements HandlerInterceptor {
     private final AuditService auditService;
     private final UserRepository userRepository;
     private final AuditHttpLoggingProperties properties;
+    private final ObjectMapper objectMapper;
 
     public AuditHttpLoggingInterceptor(
             AuditService auditService,
             UserRepository userRepository,
-            AuditHttpLoggingProperties properties) {
+            AuditHttpLoggingProperties properties,
+            ObjectMapper objectMapper) {
         this.auditService = auditService;
         this.userRepository = userRepository;
         this.properties = properties;
+        this.objectMapper = objectMapper;
     }
 
     @Override
@@ -50,10 +60,90 @@ public class AuditHttpLoggingInterceptor implements HandlerInterceptor {
         int status = response.getStatus();
         String action = buildAction(method, uri, status);
         String category = resolveCategory(uri);
-        String detail = ex != null ? truncateException(ex) : null;
+        String detail = buildDetail(request, ex);
 
         Actor actor = resolveActor();
         auditService.record(actor.userId(), actor.email(), category, action, detail);
+    }
+
+    @Nullable
+    private String buildDetail(HttpServletRequest request, @Nullable Exception ex) {
+        List<String> parts = new ArrayList<>();
+        String payload = extractPayloadForAudit(request);
+        if (StringUtils.hasText(payload)) {
+            parts.add("Corpo: " + payload);
+        }
+        if (ex != null) {
+            parts.add(truncateException(ex));
+        }
+        if (parts.isEmpty()) {
+            return null;
+        }
+        return String.join("\n", parts);
+    }
+
+    @Nullable
+    private String extractPayloadForAudit(HttpServletRequest request) {
+        if (!properties.isIncludePayload()) {
+            return null;
+        }
+        String uri = request.getRequestURI();
+        for (String prefix : properties.getPayloadExcludedPathPrefixes()) {
+            if (prefix != null && !prefix.isBlank() && uri.startsWith(prefix.trim())) {
+                return null;
+            }
+        }
+        if (HttpMethod.POST.matches(request.getMethod()) && "/api/users".equals(uri)) {
+            return null;
+        }
+        String ct = request.getContentType();
+        String lower = ct != null ? ct.toLowerCase(Locale.ROOT) : "";
+        if (StringUtils.hasText(lower)) {
+            if (lower.contains("multipart/") || lower.contains("application/octet-stream")) {
+                return null;
+            }
+        }
+        ContentCachingRequestWrapper wrapper = resolveContentCachingWrapper(request);
+        if (wrapper == null) {
+            return null;
+        }
+        byte[] buf = wrapper.getContentAsByteArray();
+        if (buf == null || buf.length == 0) {
+            return null;
+        }
+        int max = Math.max(256, properties.getPayloadMaxChars());
+        boolean jsonByHeader = lower.contains("application/json") || lower.contains("+json");
+        boolean jsonByBody = buf[0] == '{' || buf[0] == '[';
+        if (jsonByHeader || jsonByBody) {
+            return AuditPayloadRedactor.sanitizeJson(buf, objectMapper, max);
+        }
+        if (lower.startsWith("text/")) {
+            return AuditPayloadRedactor.describeNonJsonBody(buf, max);
+        }
+        if (!StringUtils.hasText(lower)) {
+            return AuditPayloadRedactor.sanitizeJson(buf, objectMapper, max);
+        }
+        return null;
+    }
+
+    /**
+     * O pedido que chega ao interceptor pode estar envolvido por vários {@link HttpServletRequestWrapper}
+     * (Spring Security, etc.); o {@link ContentCachingRequestWrapper} fica no interior.
+     */
+    @Nullable
+    private static ContentCachingRequestWrapper resolveContentCachingWrapper(HttpServletRequest request) {
+        HttpServletRequest current = request;
+        for (int depth = 0; depth < 24 && current != null; depth++) {
+            if (current instanceof ContentCachingRequestWrapper ccw) {
+                return ccw;
+            }
+            if (current instanceof HttpServletRequestWrapper w) {
+                current = (HttpServletRequest) w.getRequest();
+            } else {
+                break;
+            }
+        }
+        return null;
     }
 
     private boolean shouldAudit(HttpServletRequest request) {
