@@ -1,5 +1,8 @@
 package com.sentineia.auth;
 
+import com.sentineia.auth.passwordreset.ForgotPasswordRequest;
+import com.sentineia.auth.passwordreset.PasswordResetService;
+
 import jakarta.validation.Valid;
 
 import org.springframework.http.HttpHeaders;
@@ -16,9 +19,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final AuthService authService;
+    private final PasswordResetService passwordResetService;
 
-    public AuthController(AuthService authService) {
+    public AuthController(AuthService authService, PasswordResetService passwordResetService) {
         this.authService = authService;
+        this.passwordResetService = passwordResetService;
     }
 
     @PostMapping("/login")
@@ -31,5 +36,14 @@ public class AuthController {
             @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authorization) {
         authService.logout(authorization);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    /**
+     * Solicita e-mail de recuperação de senha. A resposta é sempre neutra (sem revelar se o e-mail existe).
+     */
+    @PostMapping("/forgot-password")
+    public ResponseEntity<Void> forgotPassword(@Valid @RequestBody ForgotPasswordRequest body) {
+        passwordResetService.requestReset(body.email());
+        return ResponseEntity.status(HttpStatus.ACCEPTED).build();
     }
 }
