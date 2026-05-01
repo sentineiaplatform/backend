@@ -3,10 +3,10 @@ package com.sentineia.security;
 import java.io.IOException;
 import java.util.UUID;
 
-import com.sentineia.users.User;
+import com.sentineia.users.user.User;
 
 import io.jsonwebtoken.Claims;
-import com.sentineia.users.UserRepository;
+import com.sentineia.users.user.UserRepository;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

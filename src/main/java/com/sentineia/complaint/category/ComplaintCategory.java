@@ -1,4 +1,4 @@
-package com.sentineia.complaint;
+package com.sentineia.complaint.category;
 
 import com.sentineia.base.BaseEntity;
 

@@ -1,4 +1,4 @@
-package com.sentineia.users;
+package com.sentineia.users.user;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;

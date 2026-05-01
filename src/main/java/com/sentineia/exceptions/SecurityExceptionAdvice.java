@@ -1,4 +1,4 @@
-package com.sentineia.security;
+package com.sentineia.exceptions;
 
 import java.util.Map;
 

@@ -1,4 +1,4 @@
-package com.sentineia.complaint;
+package com.sentineia.complaint.status;
 
 import com.sentineia.base.BaseEntity;
 
@@ -17,6 +17,12 @@ import lombok.Setter;
 @Setter
 public class ComplaintStatus extends BaseEntity {
 
+    /** Short stable code shown in the UI (e.g. workflow references). */
+    @NotBlank
+    @Size(max = 32)
+    @Column(nullable = false, unique = true, length = 32)
+    private String code;
+
     @NotBlank
     @Size(max = 100)
     @Column(nullable = false, length = 100)
@@ -28,4 +34,8 @@ public class ComplaintStatus extends BaseEntity {
 
     @Column(nullable = false)
     private int sortOrder;
+
+    /** When false, status is kept for history only and hidden from active selections. */
+    @Column(nullable = false)
+    private boolean active = true;
 }

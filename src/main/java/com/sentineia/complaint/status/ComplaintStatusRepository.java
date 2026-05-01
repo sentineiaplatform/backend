@@ -1,4 +1,4 @@
-package com.sentineia.complaint;
+package com.sentineia.complaint.status;
 
 import java.util.List;
 

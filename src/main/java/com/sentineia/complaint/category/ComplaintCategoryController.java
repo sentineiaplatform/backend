@@ -1,4 +1,4 @@
-package com.sentineia.complaint;
+package com.sentineia.complaint.category;
 
 import com.sentineia.base.BaseController;
 
@@ -11,16 +11,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/complaints")
-public class ComplaintController extends BaseController<Complaint, ComplaintService> {
+@RequestMapping("/api/complaint-categories")
+public class ComplaintCategoryController extends BaseController<ComplaintCategory, ComplaintCategoryService> {
 
-    public ComplaintController(ComplaintService service) {
+    public ComplaintCategoryController(ComplaintCategoryService service) {
         super(service);
     }
 
     @PostMapping
     @Override
-    public ResponseEntity<Complaint> create(@Valid @RequestBody Complaint entity) {
+    public ResponseEntity<ComplaintCategory> create(@Valid @RequestBody ComplaintCategory entity) {
         return super.create(entity);
     }
 }

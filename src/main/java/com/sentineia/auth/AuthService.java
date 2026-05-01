@@ -1,8 +1,8 @@
 package com.sentineia.auth;
 
 import com.sentineia.security.JwtService;
-import com.sentineia.users.User;
-import com.sentineia.users.UserRepository;
+import com.sentineia.users.user.User;
+import com.sentineia.users.user.UserRepository;
 
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;

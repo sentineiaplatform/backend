@@ -1,6 +1,8 @@
-package com.sentineia.complaint;
+package com.sentineia.complaint.complaint;
 
 import com.sentineia.base.BaseEntity;
+import com.sentineia.complaint.category.ComplaintCategory;
+import com.sentineia.complaint.status.ComplaintStatus;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -31,7 +33,7 @@ public class Complaint extends BaseEntity {
 
     @NotBlank
     @Lob
-    @Column(nullable = false, columnDefinition = "CLOB")
+    @Column(nullable = false)
     private String description;
 
     @NotNull

@@ -6,7 +6,7 @@ import java.util.UUID;
 
 import javax.crypto.SecretKey;
 
-import com.sentineia.users.User;
+import com.sentineia.users.user.User;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

@@ -1,4 +1,4 @@
-package com.sentineia.users;
+package com.sentineia.complaint.complaint;
 
 import com.sentineia.base.BaseController;
 
@@ -11,16 +11,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/users")
-public class UserController extends BaseController<User, UserService> {
+@RequestMapping("/api/complaints")
+public class ComplaintController extends BaseController<Complaint, ComplaintService> {
 
-    public UserController(UserService service) {
+    public ComplaintController(ComplaintService service) {
         super(service);
     }
 
     @PostMapping
     @Override
-    public ResponseEntity<User> create(@Valid @RequestBody User entity) {
+    public ResponseEntity<Complaint> create(@Valid @RequestBody Complaint entity) {
         return super.create(entity);
     }
 }

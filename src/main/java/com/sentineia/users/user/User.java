@@ -1,4 +1,4 @@
-package com.sentineia.users;
+package com.sentineia.users.user;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sentineia.base.BaseEntity;

@@ -1,6 +1,10 @@
-package com.sentineia.complaint;
+package com.sentineia.complaint.complaint;
 
 import com.sentineia.base.BaseService;
+import com.sentineia.complaint.category.ComplaintCategory;
+import com.sentineia.complaint.category.ComplaintCategoryRepository;
+import com.sentineia.complaint.status.ComplaintStatus;
+import com.sentineia.complaint.status.ComplaintStatusRepository;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
