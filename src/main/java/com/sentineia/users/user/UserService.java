@@ -23,6 +23,13 @@ public class UserService extends BaseService<User> {
     @Override
     @Transactional
     public User save(User user) {
+        if (user.getId() == null) {
+            String email = normalizeEmail(user.getEmail());
+            user.setEmail(email);
+            if (userRepository.existsByEmail(email)) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "Este e-mail já está em uso.");
+            }
+        }
         if (user.getId() == null && user.getPassword() != null) {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
         }

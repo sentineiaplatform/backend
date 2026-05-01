@@ -12,5 +12,7 @@ public interface UserRepository extends BaseRepository<User> {
 
     Optional<User> findByEmail(String email);
 
+    boolean existsByEmail(String email);
+
     boolean existsByEmailAndIdNot(String email, UUID id);
 }
