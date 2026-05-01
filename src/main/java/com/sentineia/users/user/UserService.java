@@ -44,6 +44,19 @@ public class UserService extends BaseService<User> {
         return new UserProfileResponse(user.getId(), user.getName(), user.getEmail());
     }
 
+    /**
+     * Atualiza a palavra-passe (já em texto plano) para um utilizador existente — usado na recuperação de senha.
+     */
+    @Transactional
+    public void updatePasswordFromReset(User user, String rawNewPassword) {
+        if (rawNewPassword == null || rawNewPassword.length() < 8) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "A palavra-passe deve ter pelo menos 8 caracteres.");
+        }
+        user.setPassword(passwordEncoder.encode(rawNewPassword));
+        userRepository.save(user);
+    }
+
     @Transactional
     public User updateProfileForAuthenticatedUser(String principalEmail, UpdateUserProfileRequest body) {
         User user = userRepository

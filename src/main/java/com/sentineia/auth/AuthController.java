@@ -2,6 +2,7 @@ package com.sentineia.auth;
 
 import com.sentineia.auth.passwordreset.ForgotPasswordRequest;
 import com.sentineia.auth.passwordreset.PasswordResetService;
+import com.sentineia.auth.passwordreset.ResetPasswordRequest;
 
 import jakarta.validation.Valid;
 
@@ -45,5 +46,12 @@ public class AuthController {
     public ResponseEntity<Void> forgotPassword(@Valid @RequestBody ForgotPasswordRequest body) {
         passwordResetService.requestReset(body.email());
         return ResponseEntity.status(HttpStatus.ACCEPTED).build();
+    }
+
+    /** Redefine a palavra-passe com o token recebido por e-mail. */
+    @PostMapping("/reset-password")
+    public ResponseEntity<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest body) {
+        passwordResetService.resetPassword(body.token(), body.newPassword());
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }
