@@ -36,6 +36,7 @@ public class JwtService {
                 .id(UUID.randomUUID().toString())
                 .subject(user.getId().toString())
                 .claim("email", user.getEmail())
+                .claim("name", user.getName())
                 .issuedAt(now)
                 .expiration(expiry)
                 .signWith(signingKey(), Jwts.SIG.HS256)

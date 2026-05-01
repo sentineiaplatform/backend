@@ -32,7 +32,8 @@ public class AuthService {
             throw new BadCredentialsException("Credenciais inválidas");
         }
         String token = jwtService.generateAccessToken(user);
-        return new TokenResponse(token, "Bearer", jwtService.getExpirationMs());
+        return new TokenResponse(
+                token, "Bearer", jwtService.getExpirationMs(), user.getName(), user.getEmail());
     }
 
     public void logout(String authorizationHeader) {
