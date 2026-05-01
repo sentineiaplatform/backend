@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/complaint-statuses")
+@RequestMapping("/api/complaint-status")
 public class ComplaintStatusController extends BaseController<ComplaintStatus, ComplaintStatusService> {
 
     public ComplaintStatusController(ComplaintStatusService service) {
