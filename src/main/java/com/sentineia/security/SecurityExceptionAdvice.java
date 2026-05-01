@@ -12,6 +12,6 @@ public class SecurityExceptionAdvice {
 
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<Map<String, String>> badCredentials(BadCredentialsException ignored) {
-        return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+        return ResponseEntity.status(401).body(Map.of("error", "Credenciais inválidas."));
     }
 }
