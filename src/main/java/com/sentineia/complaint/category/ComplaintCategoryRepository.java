@@ -1,13 +1,5 @@
 package com.sentineia.complaint.category;
 
-import java.util.Optional;
-
 import com.sentineia.base.BaseRepository;
 
-import org.springframework.stereotype.Repository;
-
-@Repository
-public interface ComplaintCategoryRepository extends BaseRepository<ComplaintCategory> {
-
-    Optional<ComplaintCategory> findByNameIgnoreCase(String name);
-}
+public interface ComplaintCategoryRepository extends BaseRepository<ComplaintCategory> {}

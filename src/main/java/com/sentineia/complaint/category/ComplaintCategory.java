@@ -19,10 +19,17 @@ public class ComplaintCategory extends BaseEntity {
 
     @NotBlank
     @Size(max = 200)
-    @Column(nullable = false, unique = true, length = 200)
+    @Column(nullable = false, length = 200)
     private String name;
 
     @Size(max = 1000)
     @Column(length = 1000)
     private String description;
+
+    @Column(nullable = false)
+    private int slaDays;
+
+    /** When false, category is kept for history only and hidden from active selections. */
+    @Column(nullable = false)
+    private boolean active = true;
 }
