@@ -48,6 +48,15 @@ public class UserController extends BaseController<User, UserService> {
                 jwtService.getExpirationMs());
     }
 
+    /** Alterar senha da conta em sessão (`currentPassword` + `newPassword`). */
+    @PostMapping(value = "/me/password", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Void> changePassword(
+            Authentication authentication, @Valid @RequestBody ChangePasswordRequest body) {
+        service().changePasswordForAuthenticatedUser(
+                authentication.getName(), body.currentPassword(), body.newPassword());
+        return ResponseEntity.noContent().build();
+    }
+
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<User> create(@Valid @RequestBody CreateUserRequest body) {
         User created = service().createFromRequest(body);

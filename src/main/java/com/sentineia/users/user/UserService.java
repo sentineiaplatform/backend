@@ -72,6 +72,23 @@ public class UserService extends BaseService<User> {
     }
 
     /**
+     * Alteração de palavra-passe pelo utilizador autenticado (valida a atual).
+     */
+    @Transactional
+    public void changePasswordForAuthenticatedUser(String principalEmail, String currentRaw, String newRaw) {
+        User user = userRepository
+                .findByEmail(normalizeEmail(principalEmail))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utilizador não encontrado."));
+        if (!passwordEncoder.matches(currentRaw, user.getPassword())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Senha atual incorreta.");
+        }
+        if (currentRaw.equals(newRaw)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "A nova senha deve ser diferente da atual.");
+        }
+        updatePasswordFromReset(user, newRaw);
+    }
+
+    /**
      * Atualiza a palavra-passe (já em texto plano) para um utilizador existente — usado na recuperação de senha.
      */
     @Transactional
