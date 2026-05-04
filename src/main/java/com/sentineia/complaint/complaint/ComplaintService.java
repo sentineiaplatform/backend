@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
+import java.util.Optional;
 
 @Service
 public class ComplaintService extends BaseService<Complaint> {
@@ -44,6 +45,10 @@ public class ComplaintService extends BaseService<Complaint> {
             protocol = "DEN-" + sb;
         } while (complaintRepository.existsByProtocol(protocol));
         return protocol;
+    }
+
+    public Optional<Complaint> findByProtocol(String protocol) {
+        return complaintRepository.findByProtocol(protocol);
     }
 
     @Override
