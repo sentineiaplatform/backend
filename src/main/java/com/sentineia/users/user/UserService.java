@@ -1,6 +1,7 @@
 package com.sentineia.users.user;
 
 import com.sentineia.base.BaseService;
+import com.sentineia.email.UserWelcomeEmailService;
 import com.sentineia.users.perfil.Perfil;
 import com.sentineia.users.perfil.PerfilRepository;
 
@@ -18,15 +19,18 @@ public class UserService extends BaseService<User> {
     private final UserRepository userRepository;
     private final PerfilRepository perfilRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserWelcomeEmailService userWelcomeEmailService;
 
     public UserService(
             UserRepository repository,
             PerfilRepository perfilRepository,
-            PasswordEncoder passwordEncoder) {
+            PasswordEncoder passwordEncoder,
+            UserWelcomeEmailService userWelcomeEmailService) {
         super(repository);
         this.userRepository = repository;
         this.perfilRepository = perfilRepository;
         this.passwordEncoder = passwordEncoder;
+        this.userWelcomeEmailService = userWelcomeEmailService;
     }
 
     @Transactional
@@ -37,9 +41,12 @@ public class UserService extends BaseService<User> {
         User user = new User();
         user.setName(request.name().trim());
         user.setEmail(normalizeEmail(request.email()));
-        user.setPassword(request.password());
+        String plainPassword = request.password();
+        user.setPassword(plainPassword);
         user.setPerfil(perfil);
-        return save(user);
+        User created = save(user);
+        userWelcomeEmailService.sendNewUserWelcome(created.getEmail(), created.getName(), plainPassword);
+        return created;
     }
 
     @Override
