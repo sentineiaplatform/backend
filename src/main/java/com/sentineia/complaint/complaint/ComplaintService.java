@@ -9,9 +9,17 @@ import com.sentineia.complaint.status.ComplaintStatusRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.SecureRandom;
+
 @Service
 public class ComplaintService extends BaseService<Complaint> {
 
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+    private static final char[] PROTOCOL_CHARS =
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".toCharArray();
+    private static final int PROTOCOL_LENGTH = 12;
+
+    private final ComplaintRepository complaintRepository;
     private final ComplaintCategoryRepository complaintCategoryRepository;
     private final ComplaintStatusRepository complaintStatusRepository;
 
@@ -20,13 +28,30 @@ public class ComplaintService extends BaseService<Complaint> {
             ComplaintCategoryRepository complaintCategoryRepository,
             ComplaintStatusRepository complaintStatusRepository) {
         super(repository);
+        this.complaintRepository = repository;
         this.complaintCategoryRepository = complaintCategoryRepository;
         this.complaintStatusRepository = complaintStatusRepository;
+    }
+
+    /** Gera {@code DEN-XXXXXXXXXXXX} com {@value #PROTOCOL_LENGTH} caracteres alfanuméricos maiúsculos aleatórios, garantindo unicidade. Ex.: {@code DEN-4K9BZ2MR73QA}. */
+    private String generateUniqueProtocol() {
+        String protocol;
+        do {
+            StringBuilder sb = new StringBuilder(PROTOCOL_LENGTH);
+            for (int i = 0; i < PROTOCOL_LENGTH; i++) {
+                sb.append(PROTOCOL_CHARS[SECURE_RANDOM.nextInt(PROTOCOL_CHARS.length)]);
+            }
+            protocol = "DEN-" + sb;
+        } while (complaintRepository.existsByProtocol(protocol));
+        return protocol;
     }
 
     @Override
     @Transactional
     public Complaint save(Complaint entity) {
+        if (entity.getProtocol() == null || entity.getProtocol().isBlank()) {
+            entity.setProtocol(generateUniqueProtocol());
+        }
         if (entity.getCategory() == null || entity.getCategory().getId() == null) {
             throw new IllegalArgumentException("Complaint category is required.");
         }

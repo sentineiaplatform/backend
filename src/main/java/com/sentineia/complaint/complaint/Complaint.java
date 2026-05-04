@@ -2,6 +2,8 @@ package com.sentineia.complaint.complaint;
 
 import com.sentineia.base.BaseEntity;
 import com.sentineia.complaint.category.ComplaintCategory;
+import com.sentineia.complaint.department.ComplaintDepartment;
+import com.sentineia.complaint.priority.ComplaintPriority;
 import com.sentineia.complaint.status.ComplaintStatus;
 
 import jakarta.persistence.Column;
@@ -26,6 +28,12 @@ import lombok.Setter;
 @Setter
 public class Complaint extends BaseEntity {
 
+    /** Código de protocolo único, gerado automaticamente na criação — ex.: {@code DEN-4K9BZ2MR73QA}. */
+    @NotBlank
+    @Size(max = 30)
+    @Column(nullable = false, length = 30, unique = true)
+    private String protocol;
+
     @NotBlank
     @Size(max = 500)
     @Column(nullable = false, length = 500)
@@ -35,6 +43,16 @@ public class Complaint extends BaseEntity {
     @Lob
     @Column(nullable = false)
     private String description;
+
+    /** Canal de receção — ex.: {@code Canal web}, {@code Telefone}, {@code Presencial}, {@code E-mail}. */
+    @NotBlank
+    @Size(max = 50)
+    @Column(nullable = false, length = 50)
+    private String channel;
+
+    /** {@code true} = denunciante anónimo; {@code false} = denunciante identificado. */
+    @Column(nullable = false)
+    private boolean anonymous = true;
 
     @NotNull
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
@@ -47,4 +65,16 @@ public class Complaint extends BaseEntity {
     @JoinColumn(name = "status_id", nullable = false)
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private ComplaintStatus status;
+
+    @NotNull
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "priority_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    private ComplaintPriority priority;
+
+    @NotNull
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "department_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    private ComplaintDepartment department;
 }

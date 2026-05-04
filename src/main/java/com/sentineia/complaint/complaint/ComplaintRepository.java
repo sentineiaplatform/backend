@@ -6,4 +6,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ComplaintRepository extends BaseRepository<Complaint> {
+
+    boolean existsByProtocol(String protocol);
 }
