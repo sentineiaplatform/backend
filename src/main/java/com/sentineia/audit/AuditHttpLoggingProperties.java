@@ -21,7 +21,7 @@ public class AuditHttpLoggingProperties {
      * Quando verdadeiro, anexa ao detalhe da auditoria um excerto do corpo JSON (campos sensíveis mascarados).
      * Desligado por defeito — ativar só em ambientes controlados (RGPD / segredos).
      */
-    private boolean includePayload = false;
+    private boolean includePayload = true;
 
     /** Tamanho máximo do excerto do corpo gravado no campo {@code detail}. */
     private int payloadMaxChars = 2000;

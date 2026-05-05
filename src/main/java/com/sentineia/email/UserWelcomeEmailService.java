@@ -1,10 +1,9 @@
 package com.sentineia.email;
 
-import com.sentineia.auth.passwordreset.PasswordResetProperties;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -18,13 +17,13 @@ public class UserWelcomeEmailService {
 
     private static final Logger log = LoggerFactory.getLogger(UserWelcomeEmailService.class);
 
-    private final PasswordResetProperties frontendProperties;
+    private final String frontendBaseUrl;
     private final ResendEmailService resendEmailService;
 
     public UserWelcomeEmailService(
-            PasswordResetProperties frontendProperties,
+            @Value("${sentineia.frontend.base-url:http://localhost:5173}") String frontendBaseUrl,
             ObjectProvider<ResendEmailService> resendEmailProvider) {
-        this.frontendProperties = frontendProperties;
+        this.frontendBaseUrl = normalizeFrontendBaseUrl(frontendBaseUrl);
         this.resendEmailService = resendEmailProvider.getIfAvailable();
     }
 
@@ -41,8 +40,8 @@ public class UserWelcomeEmailService {
                     toEmail);
             return;
         }
-        String loginUrl = frontendProperties.frontendBaseUrl() + "/login";
-        String securityUrl = frontendProperties.frontendBaseUrl() + "/app/configuracoes/seguranca";
+        String loginUrl = frontendBaseUrl + "/login";
+        String securityUrl = frontendBaseUrl + "/app/configuracoes/seguranca";
         String name = StringUtils.hasText(displayName) ? displayName.trim() : "Utilizador";
         try {
             String html = buildEmailHtml(escapeHtml(name), escapeHtml(plainPassword), loginUrl, securityUrl);
@@ -68,6 +67,12 @@ public class UserWelcomeEmailService {
                 .replace("<", "&lt;")
                 .replace(">", "&gt;")
                 .replace("\"", "&quot;");
+    }
+
+    private static String normalizeFrontendBaseUrl(String raw) {
+        String value = (raw == null || raw.isBlank()) ? "http://localhost:5173" : raw;
+        String first = value.split(",")[0].trim();
+        return first.replaceAll("/+$", "");
     }
 
     private static String buildEmailHtml(String safeName, String safePassword, String loginUrl, String securityUrl) {

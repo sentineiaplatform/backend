@@ -15,6 +15,7 @@ import com.sentineia.users.user.UserService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,22 +29,24 @@ public class PasswordResetService {
 
     private static final Logger log = LoggerFactory.getLogger(PasswordResetService.class);
     private static final SecureRandom RANDOM = new SecureRandom();
+    private static final int TOKEN_VALIDITY_MINUTES = 60;
+    private static final String RESET_PATH = "/redefinir-senha";
 
     private final UserRepository userRepository;
     private final PasswordResetTokenRepository tokenRepository;
-    private final PasswordResetProperties properties;
+    private final String frontendBaseUrl;
     private final ResendEmailService resendEmailService;
     private final UserService userService;
 
     public PasswordResetService(
             UserRepository userRepository,
             PasswordResetTokenRepository tokenRepository,
-            PasswordResetProperties properties,
+            @Value("${sentineia.frontend.base-url:http://localhost:5173}") String frontendBaseUrl,
             UserService userService,
             org.springframework.beans.factory.ObjectProvider<ResendEmailService> resendEmailProvider) {
         this.userRepository = userRepository;
         this.tokenRepository = tokenRepository;
-        this.properties = properties;
+        this.frontendBaseUrl = normalizeFrontendBaseUrl(frontendBaseUrl);
         this.userService = userService;
         this.resendEmailService = resendEmailProvider.getIfAvailable();
     }
@@ -67,7 +70,7 @@ public class PasswordResetService {
         tokenRepository.deleteByUser(user);
 
         String token = generateOpaqueToken();
-        Instant expiresAt = Instant.now().plus(properties.tokenValidityMinutes(), ChronoUnit.MINUTES);
+        Instant expiresAt = Instant.now().plus(TOKEN_VALIDITY_MINUTES, ChronoUnit.MINUTES);
 
         PasswordResetToken entity = new PasswordResetToken();
         entity.setUser(user);
@@ -85,7 +88,7 @@ public class PasswordResetService {
         }
 
         try {
-            String html = buildEmailHtml(link, properties.tokenValidityMinutes());
+            String html = buildEmailHtml(link, TOKEN_VALIDITY_MINUTES);
             resendEmailService.sendHtml(
                     user.getEmail(),
                     "Recuperação de senha — SentinelIA",
@@ -138,7 +141,13 @@ public class PasswordResetService {
 
     private String buildResetLink(String token) {
         String encoded = URLEncoder.encode(token, StandardCharsets.UTF_8);
-        return properties.frontendBaseUrl() + properties.resetPathNormalized() + "?token=" + encoded;
+        return frontendBaseUrl + RESET_PATH + "?token=" + encoded;
+    }
+
+    private static String normalizeFrontendBaseUrl(String raw) {
+        String value = (raw == null || raw.isBlank()) ? "http://localhost:5173" : raw;
+        String first = value.split(",")[0].trim();
+        return first.replaceAll("/+$", "");
     }
 
     /**
